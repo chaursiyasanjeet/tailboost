@@ -1,8 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
   const redirect = useNavigate();
+  useEffect(() => {
+    if (!localStorage.getItem("dashboardToken")) {
+      redirect("/");
+    }
+  });
+
   return (
     <aside
       id="sidebar"
@@ -24,7 +30,13 @@ const Sidebar = () => {
             <ion-icon name="home-outline" className="icon" /> Dashboard
           </span>
         </li>
-        <li className="px-6 py-4 text-white text-lg hover:bg-gray-800 cursor-pointer">
+        <li
+          className="px-6 py-4 text-white text-lg hover:bg-gray-800 cursor-pointer"
+          onClick={() => {
+            localStorage.removeItem("dashboardToken");
+            redirect("/");
+          }}
+        >
           <span>
             <ion-icon name="log-out-outline" className="icon" /> Log Out
           </span>
