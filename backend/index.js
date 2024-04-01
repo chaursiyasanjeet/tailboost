@@ -8,6 +8,7 @@ const {
   pageNotFound,
 } = require("./middelware/errorMiddelware");
 const sale = require("./routes/sale");
+const auth = require("./routes/auth");
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.get("/", (req, res) => {
 
 //routings
 app.use(sale);
+app.use(auth);
 
 //error handler page not found
 app.use((req, res, next) => {

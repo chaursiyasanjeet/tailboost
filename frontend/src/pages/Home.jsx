@@ -4,6 +4,7 @@ import Card from "../component/Card/Card";
 import {
   BarChart,
   Bar,
+  Cell,
   CartesianGrid,
   Legend,
   Line,
@@ -11,11 +12,22 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
+  PieChart,
+  Pie,
   YAxis,
 } from "recharts";
 
 function Home() {
   const [data, setData] = useState(null);
+  const colors = [
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+    "#ff7f0e",
+    "#ff0000",
+    "#00ff00",
+    "#0000ff",
+  ];
   useEffect(() => {
     getSalesData()
       .then((data) => {
@@ -26,21 +38,10 @@ function Home() {
       });
   }, []);
 
-  // const data = [
-  //   { name: "Page A", uv: 4000, pv: 2400, amt: 2400 },
-  //   { name: "Page B", uv: 3000, pv: 1398, amt: 2210 },
-  //   { name: "Page C", uv: 2000, pv: 9800, amt: 2290 },
-  //   { name: "Page D", uv: 2780, pv: 3908, amt: 2000 },
-  //   { name: "Page E", uv: 1890, pv: 4800, amt: 2181 },
-  //   { name: "Page F", uv: 2390, pv: 3800, amt: 2500 },
-  //   { name: "Page G", uv: 3490, pv: 4300, amt: 2100 },
-  // ];
-
   let category = {};
   let products = {};
   let totalSales = 0;
 
-  // Iterate over the sales data array
   data &&
     data.forEach((order) => {
       // Count categories
@@ -53,6 +54,96 @@ function Home() {
       totalSales += order.orderValue;
     });
 
+  //bar chart data
+  const salesByMonth = {};
+
+  data &&
+    data.forEach((entry) => {
+      const orderTime = new Date(entry.orderTime);
+      const month = orderTime.getMonth() + 1;
+
+      if (!salesByMonth[month]) {
+        salesByMonth[month] = 0;
+      }
+
+      salesByMonth[month] += entry.orderValue;
+    });
+
+  const monthlySalesData =
+    data &&
+    Object.keys(salesByMonth).map((month) => ({
+      month: parseInt(month),
+      totalSales: salesByMonth[month],
+    }));
+  //line chart data
+  const aggregatedData = {};
+
+  data &&
+    data.forEach((entry) => {
+      const category = entry.category;
+      const orderValue = entry.orderValue;
+
+      if (!aggregatedData[category]) {
+        aggregatedData[category] = 0;
+      }
+
+      aggregatedData[category] += orderValue;
+    });
+
+  const chartData =
+    data &&
+    Object.keys(aggregatedData).map((category) => ({
+      category,
+      orderValue: aggregatedData[category],
+    }));
+
+  //pie chart data
+  const aggregatedPieData = {};
+
+  data &&
+    data.forEach((entry) => {
+      const category = entry.category;
+      const orderValue = entry.orderValue;
+
+      if (!aggregatedPieData[category]) {
+        aggregatedPieData[category] = 0;
+      }
+
+      aggregatedPieData[category] += orderValue;
+    });
+
+  const pieData =
+    data &&
+    Object.keys(aggregatedData).map((category) => ({
+      category,
+      orderValue: aggregatedData[category],
+    }));
+
+  const renderTooltip = (props) => {
+    const { payload } = props;
+
+    if (payload && payload.length) {
+      const { category, orderValue } = payload[0].payload;
+      return (
+        <div
+          style={{
+            backgroundColor: "white",
+            padding: "5px",
+            border: "1px solid black",
+          }}
+        >
+          <p>
+            <strong>Category:</strong> {category}
+          </p>
+          <p>
+            <strong>Sales:</strong> ${orderValue}
+          </p>
+        </div>
+      );
+    }
+
+    return null;
+  };
   return (
     <main className="px-5 py-0 text-white mt-5 ">
       <div className="text-center text-2xl font-bold">
@@ -81,45 +172,65 @@ function Home() {
         <Card
           title="TOTAL ORDERS"
           icon="business-outline"
-          data={data.length}
+          data={data && data.length}
           color="bg-blue-700"
         />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-12">
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer height={300}>
           <BarChart
-            data={data}
+            data={monthlySalesData}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
+            <XAxis dataKey="month" />
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar dataKey="product" fill="#8884d8" />
-            <Bar dataKey="orderValue" fill="#82ca9d" />
+            <Bar dataKey="totalSales" fill="#8884d8" />
           </BarChart>
         </ResponsiveContainer>
 
         <ResponsiveContainer width="100%" height={300}>
           <LineChart
-            data={data}
+            data={
+              data &&
+              chartData.sort((a, b) => a.category.localeCompare(b.category))
+            }
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
+            <XAxis dataKey="category" />
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line
-              type="monotone"
-              dataKey="product"
-              stroke="#8884d8"
-              activeDot={{ r: 8 }}
-            />
-            <Line type="monotone" dataKey="category" stroke="#82ca9d" />
+            <Line type="monotone" dataKey="orderValue" stroke="#8884d8" />
           </LineChart>
+        </ResponsiveContainer>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={pieData}
+              dataKey="orderValue"
+              nameKey="category"
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              fill="#8884d8"
+              label
+            >
+              {data &&
+                pieData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={colors[index % colors.length]}
+                  />
+                ))}
+            </Pie>
+            <Tooltip content={renderTooltip} />
+            <Legend />
+          </PieChart>
         </ResponsiveContainer>
       </div>
     </main>
