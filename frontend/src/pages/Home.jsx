@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getSalesData } from "../apis/salesData";
-import Card from "../component/Card/Card";
+import Card from "../components/Card/Card";
 import {
   BarChart,
   Bar,
