@@ -9,7 +9,7 @@
 Clone the project
 
 ```bash
-  git clone [https://github.com/chaursiyasanjeet/Levitation-assignment](https://github.com/chaursiyasanjeet/tailboost.git)
+  git clone https://github.com/chaursiyasanjeet/tailboost.git
 ```
 # server setup
 
