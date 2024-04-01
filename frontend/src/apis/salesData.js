@@ -5,7 +5,8 @@ export const getSalesData = async () => {
   try {
     const reqURL = `${backendURL}/salesData`;
 
-    const result = axios.get(reqURL);
+    const result = await axios.get(reqURL);
+
     return result.data;
   } catch (error) {
     if (error) {
